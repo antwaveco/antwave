@@ -280,7 +280,7 @@
     <div class="login-sub">Espace Admin</div>
     <div class="login-field">
       <label class="login-label">Identifiant</label>
-      <input class="login-input" type="text" id="loginUser" placeholder="safya ou brandon" autocomplete="off"/>
+      <input class="login-input" type="text" id="loginUser" placeholder="ex : ANTWAVE" autocomplete="off"/>
     </div>
     <div class="login-field">
       <label class="login-label">Mot de passe</label>
@@ -460,10 +460,15 @@ document.addEventListener('keydown', function(e) {
   if(e.key === 'Enter' && document.getElementById('loginScreen').style.display !== 'none') doLogin();
 });
 
-// Check session
-if(sessionStorage.getItem('admin')) {
+// Check session - clear if expired
+const savedAdmin = sessionStorage.getItem('admin');
+if(savedAdmin && ADMINS[savedAdmin.toLowerCase()]) {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('adminContent').style.display = 'block';
+} else {
+  sessionStorage.removeItem('admin');
+  document.getElementById('adminContent').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
 }
 
 /* ── NAVIGATION ── */
@@ -810,7 +815,11 @@ function showToast(msg, type='success') {
 
 /* ── INIT ── */
 if(sessionStorage.getItem('admin')) {
+  document.getElementById('adminContent').style.display = 'block';
+  document.getElementById('loginScreen').style.display = 'none';
   loadMembres('attente');
+} else {
+  document.getElementById('adminContent').style.display = 'none';
 }
 </script>
 </body>
