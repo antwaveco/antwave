@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Fourmi</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0A0A0A;
+    --accent: #FF0050;
+    --text: #FFFFFF;
+    --muted: #555;
+    --muted2: #888;
+    --card: #111111;
+    --card2: #161616;
+    --border: #1E1E1E;
+    --border2: #2a2a2a;
+    --top-h: 60px;
+    --tab-h: 48px;
+    --green: #00C896;
+    --orange: #FF6B35;
+    --blue: #3B8FFF;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "DM Sans", sans-serif;
+    min-height: 100vh;
+  }
+
+  /* ───── TOPBAR ───── */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    height: var(--top-h);
+    display: flex; align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+  }
+
+  .logo-area {
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  .logo-text {
+    font-family: "Bebas Neue", sans-serif;
+    font-size: 22px; letter-spacing: 2px;
+    color: var(--text);
+  }
+
+  .admin-chip {
+    font-size: 9px; font-weight: 500; letter-spacing: 1.5px;
+    text-transform: uppercase; padding: 3px 8px;
+    background: #FF005018; border: 1px solid #FF005040;
+    border-radius: 4px; color: var(--accent);
+  }
+
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+
+  .notif-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--card); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: border-color 0.2s;
+    position: relative;
+  }
+  .notif-btn:hover { border-color: #333; }
+  .notif-dot {
+    position: absolute; top: 7px; right: 7px;
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent); border: 1.5px solid var(--bg);
+  }
+
+  .avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--card); border: 1px solid var(--border);
+    cursor: pointer; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color 0.2s;
+  }
+  .avatar:hover { border-color: var(--accent); }
+  .avatar svg { opacity: 0.4; }
+
+  /* ───── TABS ───── */
+  .top-tabs {
+    position: sticky; top: var(--top-h); z-index: 99;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    display: flex; height: var(--tab-h);
+    overflow-x: auto; scrollbar-width: none;
+  }
+  .top-tabs::-webkit-scrollbar { display: none; }
+
+  .top-tab {
+    flex-shrink: 0;
+    flex: 1; border: none; background: none;
+    color: var(--muted); font-family: "DM Sans", sans-serif;
+    font-size: 12px; font-weight: 400; letter-spacing: 0.3px;
+    cursor: pointer; transition: color 0.2s;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px; white-space: nowrap;
+    padding: 0 16px;
+  }
+  .top-tab.active { color: var(--text); border-bottom-color: var(--accent); }
+  .top-tab:hover:not(.active) { color: #aaa; }
+
+  .tab-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--accent); color: #fff;
+    font-size: 9px; font-weight: 500;
+    width: 16px; height: 16px; border-radius: 50%;
+    margin-left: 5px; vertical-align: middle;
+  }
+
+  /* ───── PANELS ───── */
+  .panel { display: none; padding: 20px 16px 80px; max-width: 720px; margin: 0 auto; }
+  .panel.active { display: block; }
+
+  /* ───── SECTION HEADERS ───── */
+  .section-label {
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 14px;
+  }
+
+  .section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  /* ───── STAT ROW ───── */
+  .stat-row {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 10px; margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+
+  .stat-val {
+    font-family: "Bebas Neue", sans-serif;
+    font-size: 28px; letter-spacing: 1px;
+    line-height: 1;
+  }
+  .stat-val.accent { color: var(--accent); }
+  .stat-val.green { color: var(--green); }
+  .stat-val.orange { color: var(--orange); }
+
+  .stat-lbl {
+    font-size: 10px; color: var(--muted); letter-spacing: 0.5px;
+    margin-top: 4px; text-transform: uppercase;
+  }
+
+  /* ───── MEMBER CARDS ───── */
+  .member-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 14px;
+    animation: fadeUp 0.3s ease both;
+  }
+
+  .member-avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    flex-shrink: 0; display: flex; align-items: center;
+    justify-content: center;
+    font-family: "Bebas Neue", sans-serif; font-size: 16px;
+    letter-spacing: 1px;
+  }
+
+  .member-info { flex: 1; min-width: 0; }
+  .member-name { font-size: 14px; font-weight: 500; }
+  .member-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  .member-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+  .btn-sm {
+    font-family: "DM Sans", sans-serif;
+    font-size: 11px; font-weight: 500;
+    padding: 6px 12px; border-radius: 6px;
+    border: 1px solid transparent;
+    cursor: pointer; letter-spacing: 0.3px;
+    transition: all 0.15s;
+  }
+
+  .btn-accept {
+    background: #00C89615; border-color: #00C89630; color: var(--green);
+  }
+  .btn-accept:hover { background: #00C89625; }
+
+  .btn-refuse {
+    background: #FF005012; border-color: #FF005030; color: var(--accent);
+  }
+  .btn-refuse:hover { background: #FF005020; }
+
+  .btn-lock {
+    background: #FF6B3512; border-color: #FF6B3530; color: var(--orange);
+  }
+  .btn-lock:hover { background: #FF6B3520; }
+
+  .status-pill {
+    font-size: 9px; letter-spacing: 1px; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 20px; border: 1px solid;
+  }
+  .status-pending { border-color: #FF6B3530; color: var(--orange); }
+  .status-active { border-color: #00C89630; color: var(--green); }
+  .status-locked { border-color: #FF005030; color: var(--accent); }
+  .status-refused { border-color: #33333360; color: var(--muted); }
+
+  /* ───── MISSIONS ───── */
+  .btn-primary {
+    font-family: "Bebas Neue", sans-serif;
+    font-size: 14px; letter-spacing: 1.5px;
+    padding: 10px 20px; border-radius: 8px;
+    background: var(--accent); color: #fff;
+    border: none; cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn-primary:hover { opacity: 0.88; }
+
+  .btn-outline {
+    font-family: "DM Sans", sans-serif;
+    font-size: 12px; font-weight: 500;
+    padding: 8px 16px; border-radius: 8px;
+    background: transparent; color: var(--muted);
+    border: 1px solid var(--border);
+    cursor: pointer; transition: all 0.15s;
+  }
+  .btn-outline:hover { color: var(--text); border-color: #333; }
+
+  /* CREATE MISSION FORM */
+  .create-form {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    display: none;
+  }
+  .create-form.open { display: block; animation: fadeUp 0.3s ease; }
+
+  .form-row { margin-bottom: 14px; }
+  .form-label {
+    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 7px; display: block;
+  }
+  .form-input {
+    width: 100%;
+    background: #0d0d0d; border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px;
+    color: var(--text); font-family: "DM Sans", sans-serif; font-size: 14px;
+    transition: border-color 0.2s; outline: none;
+  }
+  .form-input:focus { border-color: #333; }
+  .form-input::placeholder { color: var(--muted); }
+
+  .form-row-split { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+
+  /* MISSION ADMIN CARD */
+  .mission-admin-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 10px;
+    animation: fadeUp 0.3s ease both;
+  }
+
+  .mission-admin-top {
+    display: flex; justify-content: space-between;
+    align-items: flex-start; margin-bottom: 10px;
+  }
+
+  .mission-ref { font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-bottom: 3px; }
+  .mission-title-adm { font-family: "Bebas Neue", sans-serif; font-size: 20px; letter-spacing: 1px; }
+
+  .mission-tokens-badge {
+    background: #FF005015; border: 1px solid #FF005030;
+    border-radius: 8px; padding: 6px 10px; text-align: center; flex-shrink: 0;
+  }
+  .mtb-val { font-family: "Bebas Neue", sans-serif; font-size: 18px; color: var(--accent); display: block; }
+  .mtb-lbl { font-size: 9px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+
+  .mission-admin-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);
+  }
+
+  .mission-counters { display: flex; gap: 16px; }
+  .counter-item { font-size: 11px; color: var(--muted); }
+  .counter-item strong { color: var(--text); font-weight: 500; margin-right: 3px; }
+
+  /* ───── MODERATION ───── */
+  .render-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 10px;
+    animation: fadeUp 0.3s ease both;
+  }
+
+  .render-top {
+    display: flex; gap: 14px; align-items: flex-start;
+    margin-bottom: 14px;
+  }
+
+  .tiktok-thumb {
+    width: 52px; height: 68px; border-radius: 8px;
+    background: #1a1a1a; border: 1px solid var(--border);
+    flex-shrink: 0; display: flex; align-items: center;
+    justify-content: center; overflow: hidden;
+    font-size: 22px; position: relative;
+  }
+
+  .render-info { flex: 1; }
+  .render-user { font-size: 13px; font-weight: 500; margin-bottom: 3px; }
+  .render-mission { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .render-url {
+    font-size: 11px; color: #3B8FFF;
+    text-decoration: none; word-break: break-all;
+  }
+  .render-url:hover { text-decoration: underline; }
+
+  .render-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+  .comment-area {
+    width: 100%;
+    background: #0d0d0d; border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px;
+    color: var(--text); font-family: "DM Sans", sans-serif; font-size: 12px;
+    resize: none; outline: none; min-height: 60px;
+    transition: border-color 0.2s;
+    margin-top: 10px; display: none;
+  }
+  .comment-area:focus { border-color: #333; }
+  .comment-area.show { display: block; animation: fadeUp 0.2s ease; }
+
+  /* ───── SUIVI ───── */
+  .mission-suivi-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    animation: fadeUp 0.3s ease both;
+  }
+
+  .mission-suivi-head {
+    padding: 16px 18px;
+    display: flex; justify-content: space-between; align-items: center;
+    cursor: pointer;
+  }
+  .mission-suivi-head:hover { background: #ffffff05; }
+
+  .suivi-chevron {
+    width: 20px; height: 20px; display: flex; align-items: center;
+    justify-content: center; color: var(--muted); transition: transform 0.2s;
+  }
+  .mission-suivi-card.open .suivi-chevron { transform: rotate(180deg); }
+
+  .mission-suivi-body {
+    display: none; padding: 0 18px 18px;
+  }
+  .mission-suivi-card.open .mission-suivi-body { display: block; }
+
+  .progress-bar-wrap {
+    background: #1a1a1a; border-radius: 4px; height: 4px;
+    margin: 12px 0; overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%; border-radius: 4px;
+    background: var(--accent); transition: width 0.6s ease;
+  }
+
+  .suivi-stats-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 8px; margin-bottom: 14px;
+  }
+
+  .suivi-stat {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px;
+    text-align: center;
+  }
+  .suivi-stat-val {
+    font-family: "Bebas Neue", sans-serif;
+    font-size: 22px; display: block; line-height: 1;
+  }
+  .suivi-stat-lbl {
+    font-size: 9px; color: var(--muted);
+    letter-spacing: 0.5px; margin-top: 3px;
+    text-transform: uppercase;
+  }
+
+  .participant-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0; border-bottom: 1px solid var(--border);
+  }
+  .participant-row:last-child { border-bottom: none; }
+
+  .p-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 500; flex-shrink: 0;
+  }
+  .p-name { font-size: 12px; flex: 1; }
+  .p-status { font-size: 10px; }
+
+  /* PAYPAL SECTION */
+  .paypal-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 18px;
+    margin-top: 20px;
+  }
+
+  .paypal-header {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+  }
+  .paypal-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: #003087; display: flex; align-items: center;
+    justify-content: center; font-family: "Bebas Neue", sans-serif;
+    font-size: 11px; letter-spacing: 1px; color: #fff;
+  }
+
+  .payout-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px;
+    background: var(--card2); border-radius: 8px;
+    margin-bottom: 8px;
+    border: 1px solid var(--border);
+  }
+  .payout-name { font-size: 13px; flex: 1; }
+  .payout-amount {
+    font-family: "Bebas Neue", sans-serif; font-size: 16px;
+    color: var(--accent); letter-spacing: 1px;
+  }
+
+  .btn-paypal {
+    font-family: "DM Sans", sans-serif;
+    font-size: 12px; font-weight: 500; letter-spacing: 0.3px;
+    padding: 6px 14px; border-radius: 6px;
+    background: #0070ba; color: #fff;
+    border: none; cursor: pointer; transition: opacity 0.15s;
+  }
+  .btn-paypal:hover { opacity: 0.88; }
+  .btn-paypal:disabled { opacity: 0.3; cursor: default; }
+  .btn-paypal.sent { background: #00C896; }
+
+  .paypal-total-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-top: 14px; border-top: 1px solid var(--border); margin-top: 8px;
+  }
+  .paypal-total-label { font-size: 12px; color: var(--muted); }
+  .paypal-total-val {
+    font-family: "Bebas Neue", sans-serif; font-size: 22px;
+    color: var(--text); letter-spacing: 1px;
+  }
+
+  .btn-paypal-all {
+    font-family: "Bebas Neue", sans-serif;
+    font-size: 15px; letter-spacing: 1.5px;
+    padding: 12px 24px; border-radius: 8px;
+    background: #0070ba; color: #fff;
+    border: none; cursor: pointer; transition: opacity 0.15s;
+    margin-top: 14px; width: 100%;
+  }
+  .btn-paypal-all:hover { opacity: 0.88; }
+
+  /* ───── TOAST ───── */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 20px;
+    font-size: 13px; color: var(--text); z-index: 999;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    opacity: 0; white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .toast.success { border-color: #00C89640; }
+  .toast.error { border-color: #FF005040; }
+
+  /* ───── SUB TABS ───── */
+  .sub-tabs {
+    display: flex; gap: 0; margin-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sub-tab {
+    font-size: 12px; color: var(--muted); padding: 7px 14px;
+    cursor: pointer; border-bottom: 2px solid transparent;
+    margin-bottom: -1px; transition: all 0.2s;
+  }
+  .sub-tab.active { color: var(--text); border-bottom-color: var(--accent); }
+
+  /* ───── EMPTY ───── */
+  .empty-state {
+    text-align: center; padding: 50px 20px;
+    color: var(--muted); font-size: 13px; font-weight: 300;
+  }
+  .empty-icon { font-size: 28px; margin-bottom: 10px; opacity: 0.25; }
+
+  /* ───── DIVIDER ───── */
+  .divider {
+    height: 1px; background: var(--border);
+    margin: 20px 0;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo-area">
+    <span class="logo-text">FOURMI</span>
+    <span class="admin-chip">ADMIN</span>
+  </div>
+  <div class="topbar-right">
+    <div class="notif-btn">
+      <div class="notif-dot"></div>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.5" stroke-linecap="round">
+        <path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>
+      </svg>
+    </div>
+    <div class="avatar">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round">
+        <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- TOP TABS -->
+<div class="top-tabs">
+  <button class="top-tab active" id="tab-membres" onclick="switchTab('membres')">
+    Membres <span class="tab-badge" id="badge-membres">3</span>
+  </button>
+  <button class="top-tab" id="tab-missions" onclick="switchTab('missions')">Missions</button>
+  <button class="top-tab" id="tab-moderation" onclick="switchTab('moderation')">
+    Modération <span class="tab-badge" id="badge-moderation">5</span>
+  </button>
+  <button class="top-tab" id="tab-suivi" onclick="switchTab('suivi')">Suivi</button>
+  <button class="top-tab" id="tab-paiements" onclick="switchTab('paiements')">Paiements</button>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     PANEL 1 — MEMBRES
+══════════════════════════════════════ -->
+<div class="panel active" id="panel-membres">
+
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="stat-val accent" id="stat-total">12</div>
+      <div class="stat-lbl">Total membres</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" style="color:var(--orange)" id="stat-pending">3</div>
+      <div class="stat-lbl">En attente</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val green" id="stat-active">8</div>
+      <div class="stat-lbl">Actifs</div>
+    </div>
+  </div>
+
+  <div class="sub-tabs">
+    <div class="sub-tab active" onclick="switchMemberTab(this,'attente')">En attente</div>
+    <div class="sub-tab" onclick="switchMemberTab(this,'actifs')">Actifs</div>
+    <div class="sub-tab" onclick="switchMemberTab(this,'refuses')">Refusés</div>
+  </div>
+
+  <!-- EN ATTENTE -->
+  <div id="members-attente">
+    <div class="member-card" id="mc-1">
+      <div class="member-avatar" style="background:#FF005018;color:var(--accent)">LM</div>
+      <div class="member-info">
+        <div class="member-name">@lea.mzk</div>
+        <div class="member-meta">Léa Mazouak · 1 jan 2025 · TikTok : 4 200 abonnés</div>
+      </div>
+      <div class="member-actions">
+        <button class="btn-sm btn-accept" onclick="acceptMember('mc-1','LM','Léa Mazouak')">Accepter</button>
+        <button class="btn-sm btn-refuse" onclick="refuseMember('mc-1')">Refuser</button>
+      </div>
+    </div>
+
+    <div class="member-card" id="mc-2">
+      <div class="member-avatar" style="background:#3B8FFF18;color:var(--blue)">KD</div>
+      <div class="member-info">
+        <div class="member-name">@kylian.d</div>
+        <div class="member-meta">Kylian Dubois · 2 jan 2025 · TikTok : 11 000 abonnés</div>
+      </div>
+      <div class="member-actions">
+        <button class="btn-sm btn-accept" onclick="acceptMember('mc-2','KD','Kylian Dubois')">Accepter</button>
+        <button class="btn-sm btn-refuse" onclick="refuseMember('mc-2')">Refuser</button>
+      </div>
+    </div>
+
+    <div class="member-card" id="mc-3">
+      <div class="member-avatar" style="background:#00C89618;color:var(--green)">SB</div>
+      <div class="member-info">
+        <div class="member-name">@sara.beats</div>
+        <div class="member-meta">Sara Ben · 3 jan 2025 · TikTok : 7 800 abonnés</div>
+      </div>
+      <div class="member-actions">
+        <button class="btn-sm btn-accept" onclick="acceptMember('mc-3','SB','Sara Ben')">Accepter</button>
+        <button class="btn-sm btn-refuse" onclick="refuseMember('mc-3')">Refuser</button>
+      </div>
+    </div>
+
+    <div class="empty-state" id="empty-attente" style="display:none">
+      <div class="empty-icon">✓</div>
+      Aucune demande en attente
+    </div>
+  </div>
+
+  <!-- ACTIFS -->
+  <div id="members-actifs" style="display:none">
+    <div class="member-card">
+      <div class="member-avatar" style="background:#FF6B3518;color:var(--orange)">TR</div>
+      <div class="member-info">
+        <div class="member-name">@tao.rnb</div>
+        <div class="member-meta">Tao Renault · Actif depuis 15 déc 2024</div>
+      </div>
+      <div class="member-actions">
+        <span class="status-pill status-active">Actif</span>
+        <button class="btn-sm btn-lock" onclick="lockMember(this)">Verrouiller</button>
+      </div>
+    </div>
+    <div class="member-card">
+      <div class="member-avatar" style="background:#FF005018;color:var(--accent)">NP</div>
+      <div class="member-info">
+        <div class="member-name">@nina.pop</div>
+        <div class="member-meta">Nina Pellet · Actif depuis 10 déc 2024</div>
+      </div>
+      <div class="member-actions">
+        <span class="status-pill status-active">Actif</span>
+        <button class="btn-sm btn-lock" onclick="lockMember(this)">Verrouiller</button>
+      </div>
+    </div>
+    <div class="member-card">
+      <div class="member-avatar" style="background:#FF005018;color:var(--accent)">MV</div>
+      <div class="member-info">
+        <div class="member-name">@mia.vibe</div>
+        <div class="member-meta">Mia Vidal · Verrouillé</div>
+      </div>
+      <div class="member-actions">
+        <span class="status-pill status-locked">Verrouillé</span>
+        <button class="btn-sm btn-accept" onclick="unlockMember(this)">Déverrouiller</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- REFUSÉS -->
+  <div id="members-refuses" style="display:none">
+    <div class="empty-state">
+      <div class="empty-icon">✕</div>
+      Aucun membre refusé
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     PANEL 2 — MISSIONS
+══════════════════════════════════════ -->
+<div class="panel" id="panel-missions">
+
+  <div class="section-header">
+    <div class="section-label">Missions actives</div>
+    <button class="btn-primary" onclick="toggleCreateForm()">+ Créer</button>
+  </div>
+
+  <!-- FORM CRÉATION -->
+  <div class="create-form" id="createForm">
+    <div class="form-row">
+      <label class="form-label">Titre de la mission</label>
+      <input class="form-input" type="text" placeholder="Ex : Playback classique" id="f-title"/>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Description</label>
+      <textarea class="form-input comment-area show" style="display:block" rows="3" placeholder="Décris la mission..." id="f-desc"></textarea>
+    </div>
+    <div class="form-row-split">
+      <div>
+        <label class="form-label">Tokens</label>
+        <input class="form-input" type="number" placeholder="150" id="f-tokens"/>
+      </div>
+      <div>
+        <label class="form-label">Date limite</label>
+        <input class="form-input" type="date" id="f-deadline"/>
+      </div>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Genre musical</label>
+      <input class="form-input" type="text" placeholder="Ex : Pop, K-Pop, RnB..." id="f-genre"/>
+    </div>
+    <div class="form-actions">
+      <button class="btn-outline" onclick="toggleCreateForm()">Annuler</button>
+      <button class="btn-primary" onclick="createMission()">Créer & Diffuser</button>
+    </div>
+  </div>
+
+  <!-- LISTE MISSIONS -->
+  <div id="missions-list">
+    <div class="mission-admin-card">
+      <div class="mission-admin-top">
+        <div>
+          <div class="mission-ref">#03101</div>
+          <div class="mission-title-adm">Playback classique</div>
+        </div>
+        <div class="mission-tokens-badge">
+          <span class="mtb-val">150</span>
+          <span class="mtb-lbl">tokens</span>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--muted2);font-weight:300;line-height:1.5">
+        Chante sur ce morceau avec une légende triste en fond.
+      </div>
+      <div class="mission-admin-footer">
+        <div class="mission-counters">
+          <div class="counter-item"><strong>12</strong> participants</div>
+          <div class="counter-item"><strong>7</strong> rendus</div>
+          <div class="counter-item"><strong>3 jours</strong> restants</div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn-sm btn-lock" onclick="showToast('Mission suspendue','error')">Suspendre</button>
+          <button class="btn-sm btn-accept" onclick="showToast('Mission rediffusée ✓')">Rediffuser</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="mission-admin-card" style="animation-delay:.05s">
+      <div class="mission-admin-top">
+        <div>
+          <div class="mission-ref">#03102</div>
+          <div class="mission-title-adm">Duo split screen</div>
+        </div>
+        <div class="mission-tokens-badge">
+          <span class="mtb-val">220</span>
+          <span class="mtb-lbl">tokens</span>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--muted2);font-weight:300;line-height:1.5">
+        Joue les deux rôles d'un duo. Split screen, voix alternées.
+      </div>
+      <div class="mission-admin-footer">
+        <div class="mission-counters">
+          <div class="counter-item"><strong>8</strong> participants</div>
+          <div class="counter-item"><strong>4</strong> rendus</div>
+          <div class="counter-item"><strong>9 jours</strong> restants</div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn-sm btn-lock" onclick="showToast('Mission suspendue','error')">Suspendre</button>
+          <button class="btn-sm btn-accept" onclick="showToast('Mission rediffusée ✓')">Rediffuser</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     PANEL 3 — MODÉRATION
+══════════════════════════════════════ -->
+<div class="panel" id="panel-moderation">
+
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="stat-val" style="color:var(--orange)">5</div>
+      <div class="stat-lbl">En attente</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val green">18</div>
+      <div class="stat-lbl">Validés</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" style="color:var(--muted)">2</div>
+      <div class="stat-lbl">Refusés</div>
+    </div>
+  </div>
+
+  <div class="section-label">Rendus à modérer</div>
+
+  <!-- RENDU 1 -->
+  <div class="render-card" id="rc-1">
+    <div class="render-top">
+      <div class="tiktok-thumb">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="var(--accent)" opacity="0.6">
+          <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.14 8.14 0 004.77 1.54V6.78a4.85 4.85 0 01-1-.09z"/>
+        </svg>
+      </div>
+      <div class="render-info">
+        <div class="render-user">@lea.mzk — <span style="color:var(--muted);font-weight:300">Playback classique</span></div>
+        <div class="render-mission">Mission #03101 · Soumis le 4 jan 2025</div>
+        <a href="#" class="render-url">https://www.tiktok.com/@lea.mzk/video/7318...</a>
+      </div>
+    </div>
+    <div class="render-actions">
+      <button class="btn-sm btn-accept" onclick="validateRender('rc-1')">✓ Valider</button>
+      <button class="btn-sm btn-refuse" onclick="toggleRefuseComment('rc-1')">✕ Refuser</button>
+      <a href="#" class="btn-sm btn-outline" style="text-decoration:none">↗ Voir TikTok</a>
+    </div>
+    <textarea class="comment-area" id="comment-rc-1" placeholder="Raison du refus (optionnel)..."></textarea>
+    <div id="refuse-confirm-rc-1" style="display:none;margin-top:10px">
+      <button class="btn-sm btn-refuse" onclick="confirmRefuse('rc-1')">Confirmer le refus</button>
+    </div>
+  </div>
+
+  <!-- RENDU 2 -->
+  <div class="render-card" id="rc-2">
+    <div class="render-top">
+      <div class="tiktok-thumb">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="var(--accent)" opacity="0.6">
+          <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.14 8.14 0 004.77 1.54V6.78a4.85 4.85 0 01-1-.09z"/>
+        </svg>
+      </div>
+      <div class="render-info">
+        <div class="render-user">@kylian.d — <span style="color:var(--muted);font-weight:300">Duo split screen</span></div>
+        <div class="render-mission">Mission #03102 · Soumis le 5 jan 2025</div>
+        <a href="#" class="render-url">https://www.tiktok.com/@kylian.d/video/7319...</a>
+      </div>
+    </div>
+    <div class="render-actions">
+      <button class="btn-sm btn-accept" onclick="validateRender('rc-2')">✓ Valider</button>
+      <button class="btn-sm btn-refuse" onclick="toggleRefuseComment('rc-2')">✕ Refuser</button>
+      <a href="#" class="btn-sm btn-outline" style="text-decoration:none">↗ Voir TikTok</a>
+    </div>
+    <textarea class="comment-area" id="comment-rc-2" placeholder="Raison du refus (optionnel)..."></textarea>
+    <div id="refuse-confirm-rc-2" style="display:none;margin-top:10px">
+      <button class="btn-sm btn-refuse" onclick="confirmRefuse('rc-2')">Confirmer le refus</button>
+    </div>
+  </div>
+
+  <!-- RENDU 3 -->
+  <div class="render-card" id="rc-3">
+    <div class="render-top">
+      <div class="tiktok-thumb">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="var(--accent)" opacity="0.6">
+          <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.14 8.14 0 004.77 1.54V6.78a4.85 4.85 0 01-1-.09z"/>
+        </svg>
+      </div>
+      <div class="render-info">
+        <div class="render-user">@sara.beats — <span style="color:var(--muted);font-weight:300">Playback classique</span></div>
+        <div class="render-mission">Mission #03101 · Soumis le 5 jan 2025</div>
+        <a href="#" class="render-url">https://www.tiktok.com/@sara.beats/video/7320...</a>
+      </div>
+    </div>
+    <div class="render-actions">
+      <button class="btn-sm btn-accept" onclick="validateRender('rc-3')">✓ Valider</button>
+      <button class="btn-sm btn-refuse" onclick="toggleRefuseComment('rc-3')">✕ Refuser</button>
+      <a href="#" class="btn-sm btn-outline" style="text-decoration:none">↗ Voir TikTok</a>
+    </div>
+    <textarea class="comment-area" id="comment-rc-3" placeholder="Raison du refus (optionnel)..."></textarea>
+    <div id="refuse-confirm-rc-3" style="display:none;margin-top:10px">
+      <button class="btn-sm btn-refuse" onclick="confirmRefuse('rc-3')">Confirmer le refus</button>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ══════════════════════════════════════
+     PANEL 4 — SUIVI PAR MISSION
+══════════════════════════════════════ -->
+<div class="panel" id="panel-suivi">
+
+  <div class="section-label">Suivi des missions actives</div>
+
+  <!-- MISSION 1 -->
+  <div class="mission-suivi-card open" id="suivi-1">
+    <div class="mission-suivi-head" onclick="toggleSuivi('suivi-1')">
+      <div>
+        <div style="font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:3px">#03101</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px">Playback classique</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="text-align:right">
+          <div style="font-size:10px;color:var(--muted)">RENDUS</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--accent)">7/12</div>
+        </div>
+        <div class="suivi-chevron">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+      </div>
+    </div>
+    <div class="mission-suivi-body">
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" style="width:58%"></div>
+      </div>
+      <div class="suivi-stats-grid">
+        <div class="suivi-stat">
+          <span class="suivi-stat-val" style="color:var(--text)">12</span>
+          <div class="suivi-stat-lbl">Inscrits</div>
+        </div>
+        <div class="suivi-stat">
+          <span class="suivi-stat-val" style="color:var(--accent)">7</span>
+          <div class="suivi-stat-lbl">Rendus</div>
+        </div>
+        <div class="suivi-stat">
+          <span class="suivi-stat-val" style="color:var(--green)">5</span>
+          <div class="suivi-stat-lbl">Validés</div>
+        </div>
+        <div class="suivi-stat">
+          <span class="suivi-stat-val" style="color:var(--muted)">3</span>
+          <div class="suivi-stat-lbl">J. restants</div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:10px;text-transform:uppercase">Participants</div>
+      <div class="participant-row">
+        <div class="p-avatar" style="background:#FF005018;color:var(--accent)">LM</div>
+        <div class="p-name">@lea.mzk</div>
+        <span class="status-pill status-active p-status">Validé</span>
+      </div>
+      <div class="participant-row">
+        <div class="p-avatar" style="background:#3B8FFF18;color:var(--blue)">KD</div>
+        <div class="p-name">@kylian.d</div>
+        <span class="status-pill status-pending p-status">En attente</span>
+      </div>
+      <div class="participant-row">
+        <div class="p-avatar" style="background:#00C89618;color:var(--green)">SB</div>
+        <div class="p-name">@sara.beats</div>
+        <span class="status-pill status-active p-status">Validé</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MISSION 2 -->
+  <div class="mission-suivi-card" id="suivi-2" style="animation-delay:.05s">
+    <div class="mission-suivi-head" onclick="toggleSuivi('suivi-2')">
+      <div>
+        <div style="font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:3px">#03102</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px">Duo split screen</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="text-align:right">
+          <div style="font-size:10px;color:var(--muted)">RENDUS</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--accent)">4/8</div>
+        </div>
+        <div class="suivi-chevron">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+      </div>
+    </div>
+    <div class="mission-suivi-body">
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" style="width:50%"></div>
+      </div>
+      <div class="suivi-stats-grid">
+        <div class="suivi-stat">
+          <span class="suivi-stat-val" style="color:var(--text)">8</span>
+          <div class="suivi-stat-lbl">Inscrits</div>
+        </div>
+        <div class="suivi-stat">
+          <span class="suivi-stat-val" style="color:var(--accent)">4</span>
+          <div class="suivi-stat-lbl">Rendus</div>
+        </div>
+        <div class="suivi-stat">
+          <span class="suivi-stat-val" style="color:var(--green)">2</span>
+          <div class="suivi-stat-lbl">Validés</div>
+        </div>
+        <div class="suivi-stat">
+          <span class="suivi-stat-val" style="color:var(--muted)">9</span>
+          <div class="suivi-stat-lbl">J. restants</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ══════════════════════════════════════
+     PANEL 5 — PAIEMENTS
+══════════════════════════════════════ -->
+<div class="panel" id="panel-paiements">
+
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="stat-val accent">23</div>
+      <div class="stat-lbl">Tokens validés</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" style="color:var(--orange)">3</div>
+      <div class="stat-lbl">Paiements dus</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val green">€34,50</div>
+      <div class="stat-lbl">Total à payer</div>
+    </div>
+  </div>
+
+  <div class="paypal-section">
+    <div class="paypal-header">
+      <div class="paypal-icon">PP</div>
+      <div>
+        <div style="font-size:14px;font-weight:500">Paiements PayPal</div>
+        <div style="font-size:11px;color:var(--muted)">Missions clôturées — jan 2025</div>
+      </div>
+    </div>
+
+    <div class="payout-row" id="pay-1">
+      <div class="member-avatar" style="width:32px;height:32px;background:#FF005018;color:var(--accent);font-size:13px">LM</div>
+      <div class="payout-name">
+        <div style="font-size:13px;font-weight:500">@lea.mzk</div>
+        <div style="font-size:11px;color:var(--muted)">5 rendus validés · lea@example.com</div>
+      </div>
+      <div class="payout-amount">€15,00</div>
+      <button class="btn-paypal" onclick="sendPayment('pay-1',this)">Payer</button>
+    </div>
+
+    <div class="payout-row" id="pay-2">
+      <div class="member-avatar" style="width:32px;height:32px;background:#3B8FFF18;color:var(--blue);font-size:13px">KD</div>
+      <div class="payout-name">
+        <div style="font-size:13px;font-weight:500">@kylian.d</div>
+        <div style="font-size:11px;color:var(--muted)">3 rendus validés · kylian@example.com</div>
+      </div>
+      <div class="payout-amount">€9,00</div>
+      <button class="btn-paypal" onclick="sendPayment('pay-2',this)">Payer</button>
+    </div>
+
+    <div class="payout-row" id="pay-3">
+      <div class="member-avatar" style="width:32px;height:32px;background:#00C89618;color:var(--green);font-size:13px">SB</div>
+      <div class="payout-name">
+        <div style="font-size:13px;font-weight:500">@sara.beats</div>
+        <div style="font-size:11px;color:var(--muted)">3 rendus validés · sara@example.com</div>
+      </div>
+      <div class="payout-amount">€10,50</div>
+      <button class="btn-paypal" onclick="sendPayment('pay-3',this)">Payer</button>
+    </div>
+
+    <div class="paypal-total-row">
+      <div class="paypal-total-label">Total à décaisser</div>
+      <div class="paypal-total-val">€34,50</div>
+    </div>
+    <button class="btn-paypal-all" onclick="payAll()">Payer tout — PayPal</button>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  /* ── NAVIGATION ── */
+  const TABS = ['membres','missions','moderation','suivi','paiements'];
+
+  function switchTab(name) {
+    TABS.forEach(t => {
+      document.getElementById('panel-'+t).classList.remove('active');
+      document.getElementById('tab-'+t).classList.remove('active');
+    });
+    document.getElementById('panel-'+name).classList.add('active');
+    document.getElementById('tab-'+name).classList.add('active');
+  }
+
+  function switchMemberTab(el, name) {
+    document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    ['attente','actifs','refuses'].forEach(s => {
+      document.getElementById('members-'+s).style.display = 'none';
+    });
+    document.getElementById('members-'+name).style.display = 'block';
+  }
+
+  /* ── MEMBRES ── */
+  let pendingCount = 3;
+
+  function acceptMember(id, initials, name) {
+    const card = document.getElementById(id);
+    card.style.animation = 'none';
+    card.style.opacity = '0'; card.style.transform = 'translateX(30px)';
+    card.style.transition = 'all 0.3s ease';
+    setTimeout(() => {
+      card.remove();
+      pendingCount = Math.max(0, pendingCount - 1);
+      updateBadge('badge-membres', pendingCount);
+      if(pendingCount === 0) document.getElementById('empty-attente').style.display = 'block';
+    }, 300);
+    showToast(name + ' accepté ✓', 'success');
+  }
+
+  function refuseMember(id) {
+    const card = document.getElementById(id);
+    card.style.opacity = '0'; card.style.transition = 'opacity 0.3s';
+    setTimeout(() => {
+      card.remove();
+      pendingCount = Math.max(0, pendingCount - 1);
+      updateBadge('badge-membres', pendingCount);
+      if(pendingCount === 0) document.getElementById('empty-attente').style.display = 'block';
+    }, 300);
+    showToast('Demande refusée', 'error');
+  }
+
+  function lockMember(btn) {
+    const card = btn.closest('.member-card');
+    const pill = card.querySelector('.status-pill');
+    pill.className = 'status-pill status-locked';
+    pill.textContent = 'Verrouillé';
+    btn.textContent = 'Déverrouiller';
+    btn.className = 'btn-sm btn-accept';
+    btn.onclick = function(){ unlockMember(this); };
+    showToast('Compte verrouillé', 'error');
+  }
+
+  function unlockMember(btn) {
+    const card = btn.closest('.member-card');
+    const pill = card.querySelector('.status-pill');
+    pill.className = 'status-pill status-active';
+    pill.textContent = 'Actif';
+    btn.textContent = 'Verrouiller';
+    btn.className = 'btn-sm btn-lock';
+    btn.onclick = function(){ lockMember(this); };
+    showToast('Compte déverrouillé ✓', 'success');
+  }
+
+  /* ── MISSIONS ── */
+  function toggleCreateForm() {
+    document.getElementById('createForm').classList.toggle('open');
+  }
+
+  let missionCount = 3103;
+
+  function createMission() {
+    const title = document.getElementById('f-title').value.trim();
+    const tokens = document.getElementById('f-tokens').value;
+    const desc = document.getElementById('f-desc').value.trim();
+    if(!title) { showToast('Titre requis','error'); return; }
+
+    const list = document.getElementById('missions-list');
+    const ref = '#0'+missionCount++;
+
+    const card = document.createElement('div');
+    card.className = 'mission-admin-card';
+    card.innerHTML = `
+      <div class="mission-admin-top">
+        <div>
+          <div class="mission-ref">${ref}</div>
+          <div class="mission-title-adm">${title}</div>
+        </div>
+        <div class="mission-tokens-badge">
+          <span class="mtb-val">${tokens||'0'}</span>
+          <span class="mtb-lbl">tokens</span>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--muted2);font-weight:300;line-height:1.5">${desc||'—'}</div>
+      <div class="mission-admin-footer">
+        <div class="mission-counters">
+          <div class="counter-item"><strong>0</strong> participants</div>
+          <div class="counter-item"><strong>0</strong> rendus</div>
+          <div class="counter-item"><strong>—</strong> restants</div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn-sm btn-lock" onclick="showToast('Mission suspendue','error')">Suspendre</button>
+          <button class="btn-sm btn-accept" onclick="showToast('Mission rediffusée ✓')">Rediffuser</button>
+        </div>
+      </div>`;
+    list.prepend(card);
+    toggleCreateForm();
+    ['f-title','f-tokens','f-desc','f-genre'].forEach(id => document.getElementById(id).value = '');
+    showToast('Mission créée & diffusée ✓', 'success');
+  }
+
+  /* ── MODÉRATION ── */
+  let moderationCount = 5;
+
+  function validateRender(id) {
+    const card = document.getElementById(id);
+    card.style.opacity = '0'; card.style.transition = 'opacity 0.3s';
+    setTimeout(() => card.remove(), 300);
+    moderationCount = Math.max(0, moderationCount - 1);
+    updateBadge('badge-moderation', moderationCount);
+    showToast('Rendu validé ✓', 'success');
+  }
+
+  function toggleRefuseComment(id) {
+    const area = document.getElementById('comment-'+id);
+    const confirm = document.getElementById('refuse-confirm-'+id);
+    area.classList.toggle('show');
+    confirm.style.display = area.classList.contains('show') ? 'block' : 'none';
+  }
+
+  function confirmRefuse(id) {
+    const card = document.getElementById(id);
+    card.style.opacity = '0'; card.style.transition = 'opacity 0.3s';
+    setTimeout(() => card.remove(), 300);
+    moderationCount = Math.max(0, moderationCount - 1);
+    updateBadge('badge-moderation', moderationCount);
+    showToast('Rendu refusé', 'error');
+  }
+
+  /* ── SUIVI ── */
+  function toggleSuivi(id) {
+    document.getElementById(id).classList.toggle('open');
+  }
+
+  /* ── PAIEMENTS ── */
+  function sendPayment(id, btn) {
+    btn.disabled = true;
+    btn.textContent = 'Envoi…';
+    setTimeout(() => {
+      btn.textContent = 'Envoyé ✓';
+      btn.className = 'btn-paypal sent';
+      showToast('Paiement envoyé via PayPal ✓', 'success');
+    }, 1200);
+  }
+
+  function payAll() {
+    document.querySelectorAll('.btn-paypal').forEach((btn,i) => {
+      if(!btn.classList.contains('sent')) {
+        setTimeout(() => {
+          btn.disabled = true; btn.textContent = 'Envoyé ✓';
+          btn.className = 'btn-paypal sent';
+        }, i * 600);
+      }
+    });
+    setTimeout(() => showToast('Tous les paiements envoyés ✓', 'success'), 1800);
+  }
+
+  /* ── HELPERS ── */
+  function updateBadge(id, count) {
+    const badge = document.getElementById(id);
+    if(!badge) return;
+    badge.textContent = count;
+    badge.style.display = count > 0 ? 'inline-flex' : 'none';
+  }
+
+  let toastTimer;
+  function showToast(msg, type='success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show ' + type;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+  }
+</script>
+</body>
+</html>
