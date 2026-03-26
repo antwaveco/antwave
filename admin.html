@@ -16,6 +16,47 @@
   }
   body { background: var(--bg); color: var(--text); font-family: "DM Sans", sans-serif; min-height: 100vh; }
 
+  /* LOGIN */
+  .login-screen {
+    position: fixed; inset: 0; z-index: 9999;
+    background: var(--bg); display: flex; align-items: center; justify-content: center;
+  }
+  .login-box {
+    width: 100%; max-width: 360px; padding: 0 24px;
+  }
+  .login-logo {
+    font-family: "Bebas Neue", sans-serif; font-size: 32px; letter-spacing: 3px;
+    text-align: center; margin-bottom: 4px;
+  }
+  .login-sub {
+    text-align: center; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 36px;
+  }
+  .login-field { margin-bottom: 14px; }
+  .login-label {
+    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--muted); display: block; margin-bottom: 7px;
+  }
+  .login-input {
+    width: 100%; background: #111; border: 1px solid var(--border);
+    border-radius: 10px; padding: 13px 16px; color: var(--text);
+    font-family: "DM Sans", sans-serif; font-size: 14px; outline: none;
+    transition: border-color 0.2s;
+  }
+  .login-input:focus { border-color: #333; }
+  .login-input::placeholder { color: #444; }
+  .login-btn {
+    width: 100%; background: var(--accent); color: #fff; border: none;
+    border-radius: 10px; padding: 14px; font-family: "Bebas Neue", sans-serif;
+    font-size: 18px; letter-spacing: 2px; cursor: pointer; transition: opacity 0.15s;
+    margin-top: 8px;
+  }
+  .login-btn:hover { opacity: 0.88; }
+  .login-error {
+    text-align: center; font-size: 12px; color: var(--accent);
+    margin-top: 12px; display: none;
+  }
+
   /* TOPBAR */
   .topbar {
     position: sticky; top: 0; z-index: 100;
@@ -232,6 +273,27 @@
 </head>
 <body>
 
+<!-- LOGIN SCREEN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">ANTWAVE</div>
+    <div class="login-sub">Espace Admin</div>
+    <div class="login-field">
+      <label class="login-label">Identifiant</label>
+      <input class="login-input" type="text" id="loginUser" placeholder="safya ou brandon" autocomplete="off"/>
+    </div>
+    <div class="login-field">
+      <label class="login-label">Mot de passe</label>
+      <input class="login-input" type="password" id="loginPass" placeholder="••••••••" autocomplete="off"/>
+    </div>
+    <button class="login-btn" onclick="doLogin()">Connexion</button>
+    <div class="login-error" id="loginError">Identifiant ou mot de passe incorrect.</div>
+  </div>
+</div>
+
+<!-- ADMIN CONTENT (caché par défaut) -->
+<div id="adminContent" style="display:none">
+
 <!-- TOPBAR -->
 <div class="topbar">
   <div class="logo-area">
@@ -358,6 +420,8 @@
   </div>
 </div>
 
+</div><!-- /adminContent -->
+
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -370,6 +434,37 @@ const sb = createClient(
 
 const TABS = ['membres','missions','moderation','suivi','paiements'];
 let currentMemberTab = 'attente';
+
+/* ── LOGIN ── */
+const ADMINS = {
+  'safya': 'brsaf123',
+  'brandon': 'brsaf123'
+};
+
+function doLogin() {
+  const user = document.getElementById('loginUser').value.trim().toLowerCase();
+  const pass = document.getElementById('loginPass').value;
+  if(ADMINS[user] && ADMINS[user] === pass) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('adminContent').style.display = 'block';
+    sessionStorage.setItem('admin', user);
+    loadMembres('attente');
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+    document.getElementById('loginPass').value = '';
+  }
+}
+
+// Allow Enter key
+document.addEventListener('keydown', function(e) {
+  if(e.key === 'Enter' && document.getElementById('loginScreen').style.display !== 'none') doLogin();
+});
+
+// Check session
+if(sessionStorage.getItem('admin')) {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('adminContent').style.display = 'block';
+}
 
 /* ── NAVIGATION ── */
 function switchTab(name) {
@@ -714,7 +809,9 @@ function showToast(msg, type='success') {
 }
 
 /* ── INIT ── */
-loadMembres('attente');
+if(sessionStorage.getItem('admin')) {
+  loadMembres('attente');
+}
 </script>
 </body>
 </html>
